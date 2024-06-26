@@ -23,27 +23,33 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode.Companion.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-
-
 import com.manuelhaas.todo.ui.theme.components.TodoCard
 import com.manuelhaas.todo.ui.theme.navigation.AppScreens
+import com.manuelhaas.todo.ui.theme.viewmodel.Todo
 import com.manuelhaas.todo.ui.theme.viewmodel.TodoViewModel
-
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavController, todoViewModel: TodoViewModel = viewModel()) {
-    val todos by remember { mutableStateOf(todoViewModel.todos) }
+    val todos by todoViewModel.todos.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
+    var todoToDelete by remember { mutableStateOf<Todo?>(null) }
+
 
 
     Scaffold(
@@ -51,8 +57,6 @@ fun HomeScreen(navController: NavController, todoViewModel: TodoViewModel = view
         topBar = {
             TopAppBar(
                 modifier = Modifier.padding(bottom = 10.dp),
-                navigationIcon = {
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.onBackground,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -80,8 +84,7 @@ fun HomeScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 modifier = Modifier.padding(end = 35.dp, bottom = 10.dp),
                 containerColor = MaterialTheme.colorScheme.onBackground,
                 contentColor = MaterialTheme.colorScheme.primaryContainer
-            )
-            {
+            ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add")
             }
         },
@@ -94,62 +97,41 @@ fun HomeScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(todoList) {todoItem ->
-                val isFavorite = remember {
-                    mutableStateOf(false)
-                }
-                val checked = remember {
-                    mutableStateOf(false)
-                }
+            items(todos) { todoItem ->
+                val isFavorite = remember { mutableStateOf(todoItem.isFavorite) }
+                val checked = remember { mutableStateOf(todoItem.isChecked) }
+
                 TodoCard(
+                    id = todoItem.id,
                     todoName = todoItem.todoName,
                     tag = todoItem.tag,
-                    todoDate = todoItem.todoDate,
+                    date = todoItem.date,
                     checked = checked.value,
                     isFavorite = isFavorite.value,
-                    onFavoriteClick = { it -> isFavorite.value = it },
-                    onCheckedChange = { it -> checked.value = it },
+                    onFavoriteClick = { isFavorite.value = it },
+                    onCheckedChange = { checked.value = it },
+                    onClick = {
+                        navController.navigate(AppScreens.EditTodoScreen.createRoute(todoItem.id))
+                    },
+                    onLongPress = { todo ->
+                        todoToDelete = todo
+                        showDialog = true
+                    }
                 )
             }
         }
+        if (showDialog && todoToDelete != null) {
+            ShowDialogToDeleteTodo(
+                todo = todoToDelete!!,
+                todoViewModel = todoViewModel,
+                onDismiss = {
+                    showDialog = false // Cerrar el diálogo
+                    todoToDelete = null // Restablecer el TODO a eliminar
+                }
+            )
+        }
     }
 }
-
-
-data class Todo(
-    val todoName: String,
-    val tag: String,
-    val todoDate: String
-)
-
-val todoList = listOf(
-    Todo(todoName = "Todo 1", tag = "Home", todoDate = "22 de marzo"),
-    Todo(todoName = "Todo 2", tag = "School", todoDate = "30 de agost"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 1", tag = "Home", todoDate = "22 de marzo"),
-    Todo(todoName = "Todo 2", tag = "School", todoDate = "30 de agosto"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-    Todo(todoName = "Todo 3", tag = "Home", todoDate = "5 de marzo"),
-)
 
 
 

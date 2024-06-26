@@ -36,21 +36,47 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.navigation.NavController
 import com.manuelhaas.todo.R
+import com.manuelhaas.todo.ui.theme.navigation.AppScreens
+import com.manuelhaas.todo.ui.theme.viewmodel.Todo
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
 fun TodoCard(
+    id: Int = 0,
     todoName: String,
     tag: String,
-    todoDate: String,
+    date: String,
     isFavorite: Boolean,
     checked: Boolean,
     onFavoriteClick: (state: Boolean) -> Unit,
-    onCheckedChange: (state: Boolean) -> Unit
+    onCheckedChange: (state: Boolean) -> Unit,
+    onClick: () -> Unit,
+    onLongPress: (Todo) -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
+    var longPressTriggered by remember { mutableStateOf(false) }
 
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                 detectTapGestures(
+                     onTap = { onClick() },
+                     onLongPress = {
+                         longPressTriggered = true
+                         onLongPress(Todo(id, todoName, tag, date, checked, isFavorite))
+                     }
+            )
+        }
+    ) {
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 12.dp, end = 12.dp)
@@ -58,14 +84,16 @@ fun TodoCard(
             Column {
                 Checkbox(
                     checked = checked,
-                    onCheckedChange = { onCheckedChange(it) },
+                    onCheckedChange = { isChecked ->
+                        onCheckedChange(isChecked)
+                    },
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = todoName)
                 Row(horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(text = tag, modifier = Modifier.padding(end = 12.dp))
-                    Text(text = todoDate)
+                    Text(text = date)
                 }
             }
             Column(
@@ -74,8 +102,8 @@ fun TodoCard(
             ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "",
-                    Modifier.clickable { onFavoriteClick(!isFavorite) }
+                    contentDescription = "Favorite",
+                    modifier = Modifier.clickable { onFavoriteClick(!isFavorite) }
                 )
             }
         }

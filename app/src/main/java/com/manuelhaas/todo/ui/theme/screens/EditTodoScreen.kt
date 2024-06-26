@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.manuelhaas.todo.ui.theme.viewmodel.Todo
 import com.manuelhaas.todo.ui.theme.viewmodel.TodoViewModel
 import java.util.Date
 
@@ -36,19 +38,29 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = viewModel()) {
-    var todoName by rememberSaveable { mutableStateOf(todoViewModel.todoName) }
-    var tag by rememberSaveable { mutableStateOf(todoViewModel.tag) }
-    var todoDate by rememberSaveable { mutableStateOf(todoViewModel.date) }
+fun EditTodoScreen(navController: NavController, todoViewModel: TodoViewModel, todoId: Int) {
+
+    // Cargar la tarea para edición
+    LaunchedEffect(todoId) {
+        todoViewModel.loadTodoForEdit(todoId)
+    }
+
+    val todo = remember { todoViewModel.getTodoById(todoId) }
+    // Inicializar los estados con los valores de la tarea
+    var todoName by rememberSaveable { mutableStateOf(todo?.todoName ?: "") }
+    var tag by rememberSaveable { mutableStateOf(todo?.tag ?: "") }
+    var date by rememberSaveable { mutableStateOf(todo?.date ?: "") }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Create Todo") },
+                title = { Text("Edit todo") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        todoViewModel.addTodo()
+                        todo?.let {
+                            todoViewModel.updateTodo(it.id, todoName, tag, date)
+                        }
                         navController.popBackStack()
                     }) {
                         Icon(
@@ -68,10 +80,10 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 .padding(horizontal = 16.dp)
         ) {
             TextField(
-                value = todoViewModel.todoName,
+                value = todoViewModel.editTodoName,
                 onValueChange = {
+                    todoViewModel.editTodoName = it
                     todoName = it
-                    todoViewModel.todoName = it
                 },
                 placeholder = { Text("Title", style = TextStyle(fontSize = 24.sp)) },
                 modifier = Modifier
@@ -85,10 +97,10 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 ),
             )
             TextField(
-                value = todoViewModel.tag,
+                value = todoViewModel.editTag,
                 onValueChange = {
+                    todoViewModel.editTag = it
                     tag = it
-                    todoViewModel.tag = it
                 },
                 placeholder = { Text("Your next task", style = TextStyle(fontSize = 18.sp)) },
                 modifier = Modifier
@@ -102,10 +114,10 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 ),
             )
             TextField(
-                value = todoViewModel.date,
+                value = todoViewModel.editDate,
                 onValueChange = {
-                    todoDate = it
-                    todoViewModel.date = it
+                    todoViewModel.editDate = it
+                    date = it
                 },
                 placeholder = { Text("Date", style = TextStyle(fontSize = 18.sp)) },
                 modifier = Modifier
@@ -118,7 +130,6 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                     errorIndicatorColor = Color.Transparent,
                 ),
             )
-
         }
     }
 }

@@ -50,8 +50,6 @@ fun HomeScreen(navController: NavController, todoViewModel: TodoViewModel = view
     var showDialog by remember { mutableStateOf(false) }
     var todoToDelete by remember { mutableStateOf<Todo?>(null) }
 
-
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -98,18 +96,19 @@ fun HomeScreen(navController: NavController, todoViewModel: TodoViewModel = view
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(todos) { todoItem ->
-                val isFavorite = remember { mutableStateOf(todoItem.isFavorite) }
-                val checked = remember { mutableStateOf(todoItem.isChecked) }
-
                 TodoCard(
                     id = todoItem.id,
                     todoName = todoItem.todoName,
                     tag = todoItem.tag,
                     date = todoItem.date,
-                    checked = checked.value,
-                    isFavorite = isFavorite.value,
-                    onFavoriteClick = { isFavorite.value = it },
-                    onCheckedChange = { checked.value = it },
+                    checked = todoItem.isChecked,
+                    isFavorite = todoItem.isFavorite,
+                    onFavoriteClick = { todoId ->
+                        todoViewModel.toggleFavorite(todoId)
+                    },
+                    onCheckedChange = { todoId, isChecked ->
+                        todoViewModel.updateCheckedState(todoId, isChecked)
+                    },
                     onClick = {
                         navController.navigate(AppScreens.EditTodoScreen.createRoute(todoItem.id))
                     },

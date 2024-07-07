@@ -55,8 +55,8 @@ fun TodoCard(
     date: String,
     isFavorite: Boolean,
     checked: Boolean,
-    onFavoriteClick: (state: Boolean) -> Unit,
-    onCheckedChange: (state: Boolean) -> Unit,
+    onFavoriteClick: (Int) -> Unit,
+    onCheckedChange: (Int, Boolean) -> Unit,
     onClick: () -> Unit,
     onLongPress: (Todo) -> Unit
 ) {
@@ -85,7 +85,7 @@ fun TodoCard(
                 Checkbox(
                     checked = checked,
                     onCheckedChange = { isChecked ->
-                        onCheckedChange(isChecked)
+                        onCheckedChange(id, isChecked)
                     },
                 )
             }
@@ -103,7 +103,7 @@ fun TodoCard(
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = "Favorite",
-                    modifier = Modifier.clickable { onFavoriteClick(!isFavorite) }
+                    modifier = Modifier.clickable { onFavoriteClick(id) }
                 )
             }
         }

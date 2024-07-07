@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.manuelhaas.todo"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -50,7 +50,7 @@ android {
 }
 
 dependencies {
-    implementation("androidx.compose.material3:material3:1.2.1") // Consolidado y versión específica
+    implementation("androidx.compose.material3:material3:1.2.1")
     val nav_version = "2.7.7"
 
     implementation("androidx.core:core-ktx:1.13.1")

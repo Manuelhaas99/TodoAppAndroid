@@ -2,44 +2,58 @@ package com.manuelhaas.todo.ui.theme.screens
 
 
 import android.annotation.SuppressLint
-import android.nfc.Tag
-import androidx.compose.foundation.layout.Arrangement
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.manuelhaas.todo.ui.theme.components.DatePickerComponent
 import com.manuelhaas.todo.ui.theme.viewmodel.TodoViewModel
-import java.util.Date
+import kotlinx.coroutines.launch
+import java.util.Calendar
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
 @Composable
-fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = viewModel()) {
-    var todoName by rememberSaveable { mutableStateOf(todoViewModel.todoName) }
-    var tag by rememberSaveable { mutableStateOf(todoViewModel.tag) }
-    var todoDate by rememberSaveable { mutableStateOf(todoViewModel.date) }
+//TODO/ this component should have its own viewmodel (?)
+fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = viewModel()) {
+    //TODO/ The viewmodel should handle the state of the input texts
+    val todoName by todoViewModel.todoName.collectAsState()
+    val tag by todoViewModel.tag.collectAsState()
+    val todoDate by todoViewModel.date.collectAsState()
+    val focusRequester = remember { FocusRequester() }
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -48,18 +62,28 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 title = { Text("Create Todo") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        todoViewModel.addTodo()
-                        navController.popBackStack()
+                        coroutineScope.launch {
+                            if (todoName.isBlank() || tag.isBlank() || todoDate.isBlank()) {
+                                snackbarHostState.showSnackbar("All fields must be filled")
+                            } else {
+                                todoViewModel.addTodo()
+                                navController.popBackStack()
+                            }
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Clear,
                             contentDescription = "Back",
-                            tint = Color.Black
+                            tint = Color.White
                         )
                     }
                 },
             )
         },
+        snackbarHost = {
+            // Snackbar host to display snackbar messages
+            SnackbarHost(hostState = snackbarHostState)
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -68,14 +92,12 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 .padding(horizontal = 16.dp)
         ) {
             TextField(
-                value = todoViewModel.todoName,
-                onValueChange = {
-                    todoName = it
-                    todoViewModel.todoName = it
-                },
+                value = todoName,
+                onValueChange = { newTodoName -> todoViewModel.updateTodoName(newTodoName) },
                 placeholder = { Text("Title", style = TextStyle(fontSize = 24.sp)) },
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
@@ -85,11 +107,8 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                 ),
             )
             TextField(
-                value = todoViewModel.tag,
-                onValueChange = {
-                    tag = it
-                    todoViewModel.tag = it
-                },
+                value = tag,
+                onValueChange = { newTag -> todoViewModel.updateTag(newTag) },
                 placeholder = { Text("Your next task", style = TextStyle(fontSize = 18.sp)) },
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -101,24 +120,10 @@ fun TodoScreen(navController: NavController, todoViewModel: TodoViewModel = view
                     errorIndicatorColor = Color.Transparent,
                 ),
             )
-            TextField(
-                value = todoViewModel.date,
-                onValueChange = {
-                    todoDate = it
-                    todoViewModel.date = it
-                },
-                placeholder = { Text("Date", style = TextStyle(fontSize = 18.sp)) },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                ),
+            DatePickerComponent(
+                initialDate = todoViewModel.editDate,
+                onDateSelected = { newDate -> todoViewModel.updateDate(newDate) }
             )
-
         }
     }
 }

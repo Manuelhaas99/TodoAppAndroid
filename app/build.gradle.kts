@@ -51,6 +51,8 @@ android {
 
 dependencies {
     implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.core:core-i18n:1.0.0-alpha01")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
     val nav_version = "2.7.7"
 
     implementation("androidx.core:core-ktx:1.13.1")

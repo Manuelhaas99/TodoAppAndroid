@@ -2,39 +2,26 @@ package com.manuelhaas.todo.ui.theme.screens
 
 
 import android.annotation.SuppressLint
-import android.os.Build
-import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.manuelhaas.todo.ui.theme.components.DatePickerComponent
 import com.manuelhaas.todo.ui.theme.viewmodel.TodoViewModel
 import kotlinx.coroutines.launch
-import java.util.Calendar
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,9 +30,7 @@ import java.util.Calendar
 //TODO/ this component should have its own viewmodel (?)
 fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = viewModel()) {
     //TODO/ The viewmodel should handle the state of the input texts
-    val todoName by todoViewModel.todoName.collectAsState()
-    val tag by todoViewModel.tag.collectAsState()
-    val todoDate by todoViewModel.date.collectAsState()
+    val state by todoViewModel.state.collectAsState()
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -63,7 +48,7 @@ fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = v
                 navigationIcon = {
                     IconButton(onClick = {
                         coroutineScope.launch {
-                            if (todoName.isBlank() || tag.isBlank() || todoDate.isBlank()) {
+                            if (state.todoName.isBlank() || state.tag.isBlank() || state.date.isBlank()) {
                                 snackbarHostState.showSnackbar("All fields must be filled")
                             } else {
                                 todoViewModel.addTodo()
@@ -92,8 +77,8 @@ fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = v
                 .padding(horizontal = 16.dp)
         ) {
             TextField(
-                value = todoName,
-                onValueChange = { newTodoName -> todoViewModel.updateTodoName(newTodoName) },
+                value = state.todoName,
+                onValueChange = { todoViewModel.updateTodoName(it) },
                 placeholder = { Text("Title", style = TextStyle(fontSize = 24.sp)) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,8 +92,8 @@ fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = v
                 ),
             )
             TextField(
-                value = tag,
-                onValueChange = { newTag -> todoViewModel.updateTag(newTag) },
+                value = state.tag,
+                onValueChange = { todoViewModel.updateTag(it) },
                 placeholder = { Text("Your next task", style = TextStyle(fontSize = 18.sp)) },
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -121,8 +106,10 @@ fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = v
                 ),
             )
             DatePickerComponent(
-                initialDate = todoViewModel.editDate,
-                onDateSelected = { newDate -> todoViewModel.updateDate(newDate) }
+                initialDate = todoViewModel.selectedDate.value,
+                onDateSelected = { selectedDate ->
+                    todoViewModel.updateDate(selectedDate)
+                }
             )
         }
     }

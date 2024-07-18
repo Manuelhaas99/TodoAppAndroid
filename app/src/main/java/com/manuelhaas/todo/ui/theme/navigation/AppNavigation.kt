@@ -17,12 +17,15 @@ fun AppNavigation () {
     val todoViewModel: TodoViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = AppScreens.HomeScreen.route) {
+
         composable(route = AppScreens.HomeScreen.route) {
             HomeScreen(navController, todoViewModel)
         }
+
         composable(route = AppScreens.TodoScreen.route) {
             AddTodoScreen(navController, todoViewModel)
         }
+
         composable(route = AppScreens.EditTodoScreen.route) { backStackEntry ->
             val todoId = backStackEntry.arguments?.getString("todoId")?.toIntOrNull()
             if (todoId != null) {

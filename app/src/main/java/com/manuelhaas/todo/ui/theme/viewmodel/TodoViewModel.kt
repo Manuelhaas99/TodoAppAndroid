@@ -1,7 +1,5 @@
 package com.manuelhaas.todo.ui.theme.viewmodel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.manuelhaas.todo.ui.theme.components.formatDateWithYear
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +13,7 @@ data class Todo(
     val id: Int = 0,
     val todoName: String = "",
     val tag: String = "",
-    val selectedDate: String = LocalDateTime.now().formatDateWithYear(),
-    val date: String = "",
+    val date: String = LocalDateTime.now().formatDateWithYear(),
     var isFavorite: Boolean = false,
     var isChecked: Boolean = false,
 )
@@ -26,11 +23,7 @@ class TodoViewModel : ViewModel() {
     val state = _state.asStateFlow()
 
     private val _todos = MutableStateFlow<MutableList<Todo>>(mutableListOf())
-    val todos: StateFlow<List<Todo>> get() = _todos
-
-//    private val _selectedDate = mutableStateOf<String?>(LocalDateTime.now().formatDateWithYear())
-//    val selectedDate: State<String?>
-//        get() = _selectedDate
+    val todos: StateFlow<List<Todo>> = _todos
 
     fun updateTodoName(newTodoName: String) {
         _state.update {
@@ -46,26 +39,17 @@ class TodoViewModel : ViewModel() {
 
     fun updateDate(newDate: String) {
         _state.update {
-            it.copy(  selectedDate = newDate, date = newDate )
+            it.copy(  date = newDate )
         }
     }
 
-//    fun setSelectedDate(date: String) {
-//        _selectedDate.value = date
-//    }
-//
-//    fun getSelectedDate(): String? {
-//        return _selectedDate.value
-//    }
-
     fun addTodo() {
-        if (_state.value.todoName.isNotEmpty() && _state.value.tag.isNotEmpty() && _state.value.selectedDate.isNotEmpty()) {
+        if (_state.value.todoName.isNotEmpty() && _state.value.tag.isNotEmpty() && _state.value.date.isNotEmpty()) {
             val newTodo = Todo(
                 id = _todos.value.size + 1,
                 todoName = _state.value.todoName,
                 tag = _state.value.tag,
                 date = _state.value.date,
-                selectedDate =  _state.value.selectedDate,
             )
             _todos.update { todos ->
                 todos.toMutableList().apply {
@@ -76,7 +60,6 @@ class TodoViewModel : ViewModel() {
         }
 
     }
-
 
     fun updateTodo(todoId: Int) {
         _todos.update { todos ->
@@ -91,8 +74,7 @@ class TodoViewModel : ViewModel() {
                     it.copy(
                         todoName = _state.value.todoName,
                         tag = _state.value.tag,
-                        date = _state.value.date,
-                        selectedDate = _state.value.selectedDate,
+                        date = _state.value.date
                     )
                 } else {
                     it
@@ -119,8 +101,7 @@ class TodoViewModel : ViewModel() {
                 it.copy(
                     todoName = todo.todoName,
                     tag = todo.tag,
-                    date = todo.date,
-                    selectedDate = todo.selectedDate
+                    date = todo.date
                 )
             }
         }

@@ -3,7 +3,6 @@ package com.manuelhaas.todo.ui.theme.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
@@ -17,11 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.manuelhaas.todo.ui.theme.components.DatePickerComponent
-import com.manuelhaas.todo.ui.theme.components.convertDateToMillis
-import com.manuelhaas.todo.ui.theme.components.formatDateFromMillis
 import com.manuelhaas.todo.ui.theme.viewmodel.TodoViewModel
-import java.time.LocalDateTime
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
@@ -30,9 +25,6 @@ fun EditTodoScreen(navController: NavController, todoViewModel: TodoViewModel, t
     val state by todoViewModel.state.collectAsState()
     // Cargar la tarea para edición
     val focusRequester = remember { FocusRequester() }
-//    val selectedDate by todoViewModel.selectedDate
-//    val coroutineScope = rememberCoroutineScope()
-//    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(todoId) {
         todoViewModel.loadTodoForEdit(todoId)
@@ -42,11 +34,6 @@ fun EditTodoScreen(navController: NavController, todoViewModel: TodoViewModel, t
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
-
-//    val onDateSelected: (String) -> Unit = { selectedDate ->
-//        todoViewModel.updateDate(selectedDate)
-//    }
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -109,10 +96,14 @@ fun EditTodoScreen(navController: NavController, todoViewModel: TodoViewModel, t
                     errorIndicatorColor = Color.Transparent,
                 ),
             )
-            DatePickerComponent(
-                initialDate = state.selectedDate,
-                onDateSelected = { todoViewModel.updateDate(it) }
-            )
+
+            if (state.date.isNotEmpty()) {
+                DatePickerComponent(
+                    initialDate = state.date,
+                    onDateSelected = { todoViewModel.updateDate(it) }
+                )
+            }
+
         }
     }
 }

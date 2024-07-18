@@ -53,6 +53,9 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.1")
     implementation("androidx.core:core-i18n:1.0.0-alpha01")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
+    implementation("androidx.wear.compose:compose-material:1.3.1")
+    implementation("com.google.android.libraries.places:places:3.5.0")
+
     val nav_version = "2.7.7"
 
     implementation("androidx.core:core-ktx:1.13.1")
@@ -63,6 +66,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation("androidx.compose.material:material-icons-extended:1.3.1") // Añadir esta línea
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

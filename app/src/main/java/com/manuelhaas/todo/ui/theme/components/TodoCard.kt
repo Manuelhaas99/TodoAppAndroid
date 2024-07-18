@@ -53,6 +53,7 @@ fun TodoCard(
     todoName: String,
     tag: String,
     date: String,
+    selectedDate: String,
     isFavorite: Boolean,
     checked: Boolean,
     onFavoriteClick: (Int) -> Unit,
@@ -70,7 +71,7 @@ fun TodoCard(
                      onTap = { onClick() },
                      onLongPress = {
                          longPressTriggered = true
-                         onLongPress(Todo(id, todoName, tag, date, checked, isFavorite))
+                         onLongPress(Todo(id, todoName, tag, date, selectedDate, checked, isFavorite))
                      }
             )
         }

@@ -1,81 +1,92 @@
 package com.manuelhaas.todo.ui.theme.components
 
+
+
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import com.manuelhaas.todo.ui.theme.White
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerComponent(
-    initialDate: String? = null,
-    onDateSelected: (String) -> Unit
+    initialDate: String?,
+    onDateSelected: (String) -> Unit,
+    initialSelectedDate: Long = 0
 ) {
-
+    val calculatedInitialDate = if (initialSelectedDate != 0L) initialSelectedDate else LocalDateTime.now().convertDateToMillis()
     var selectedDate by remember { mutableStateOf(initialDate ?: "") }
-    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
     var showDialog by remember { mutableStateOf(false) }
     // This will ensure datePickerState is initialized once the component is ready
-    var datePickerState by remember { mutableStateOf<DatePickerState?>(null)
+    var datePickerState by remember { mutableStateOf<DatePickerState?>(null) }
+
+    if (initialDate == null) {
+        return
     }
 
     LaunchedEffect(Unit) {
-        val initialMillis = initialDate?.let {
-            LocalDate.parse(it, dateFormatter).toEpochDay() * 24 * 60 * 60 * 1000
-        } ?: (LocalDate.now().toEpochDay() * 24 * 60 * 60 * 1000)
-
         datePickerState = DatePickerState(
-            initialSelectedDateMillis = initialMillis,
-            locale = java.util.Locale.getDefault()
+            locale = java.util.Locale.getDefault(),
+            initialSelectedDateMillis = calculatedInitialDate,
         )
     }
+
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxWidth()
+            .padding(15 .dp)
     ) {
-        Text(
-            text = "Selected Date:  $selectedDate",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 8.dp),
-            color = White
-        )
-        Button(
-            onClick = { showDialog = true },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = "Pick a Date")
-        }
+            OutlinedTextField(
+                value = selectedDate,
+                onValueChange = { selectedDate = it },
+                label = { Text("Select Date") },
+                readOnly = true,
+                leadingIcon = {
+                    androidx.compose.material3.Icon(
+                        imageVector = Icons.Filled.DateRange,
+                        contentDescription = "Selected Date",
+                        modifier = Modifier.clickable { showDialog = true }
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showDialog = true
+                    }
+            )
     }
 
-    if (showDialog && datePickerState != null) {
+    if (showDialog) {
         DatePickerDialog(
             onDismissRequest = { showDialog = false },
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState?.selectedDateMillis?.let { millis ->
-                        val formattedDate = LocalDate.ofEpochDay(millis / (24 * 60 * 60 * 1000)).format(dateFormatter)
+                        val formattedDate = millis.formatDateFromMillis()
                         selectedDate = formattedDate
                         onDateSelected(formattedDate)
                     }
@@ -91,7 +102,8 @@ fun DatePickerComponent(
             },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            DatePicker(state = datePickerState!!)
+            datePickerState?.let { DatePicker(state = it) }
         }
     }
 }
+

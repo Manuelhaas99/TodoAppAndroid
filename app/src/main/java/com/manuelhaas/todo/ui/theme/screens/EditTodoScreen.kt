@@ -17,7 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.manuelhaas.todo.ui.theme.components.DatePickerComponent
+import com.manuelhaas.todo.ui.theme.components.convertDateToMillis
+import com.manuelhaas.todo.ui.theme.components.formatDateFromMillis
 import com.manuelhaas.todo.ui.theme.viewmodel.TodoViewModel
+import java.time.LocalDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,12 +30,14 @@ fun EditTodoScreen(navController: NavController, todoViewModel: TodoViewModel, t
     val state by todoViewModel.state.collectAsState()
     // Cargar la tarea para edición
     val focusRequester = remember { FocusRequester() }
+//    val selectedDate by todoViewModel.selectedDate
 //    val coroutineScope = rememberCoroutineScope()
 //    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(todoId) {
         todoViewModel.loadTodoForEdit(todoId)
     }
+
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -105,10 +110,8 @@ fun EditTodoScreen(navController: NavController, todoViewModel: TodoViewModel, t
                 ),
             )
             DatePickerComponent(
-                initialDate = todoViewModel.selectedDate.value,
-                onDateSelected = { selectedDate ->
-                    todoViewModel.updateDate(selectedDate)
-                }
+                initialDate = state.selectedDate,
+                onDateSelected = { todoViewModel.updateDate(it) }
             )
         }
     }

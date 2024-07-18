@@ -101,6 +101,7 @@ fun HomeScreen(navController: NavController, todoViewModel: TodoViewModel = view
                     todoName = todoItem.todoName,
                     tag = todoItem.tag,
                     date = todoItem.date,
+                    selectedDate = todoItem.selectedDate,
                     checked = todoItem.isChecked,
                     isFavorite = todoItem.isFavorite,
                     onFavoriteClick = { todoId ->

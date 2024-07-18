@@ -3,8 +3,10 @@ package com.manuelhaas.todo.ui.theme.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -20,8 +22,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.manuelhaas.todo.ui.theme.components.DatePickerComponent
+import com.manuelhaas.todo.ui.theme.components.convertDateToMillis
+import com.manuelhaas.todo.ui.theme.components.formatDateFromMillis
 import com.manuelhaas.todo.ui.theme.viewmodel.TodoViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,6 +39,7 @@ fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = v
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+//    val selectedDate by todoViewModel.selectedDate
 
 
     LaunchedEffect(Unit) {
@@ -48,7 +54,7 @@ fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = v
                 navigationIcon = {
                     IconButton(onClick = {
                         coroutineScope.launch {
-                            if (state.todoName.isBlank() || state.tag.isBlank() || state.date.isBlank()) {
+                            if (state.todoName.isBlank() || state.tag.isBlank() || state.selectedDate.isBlank()) {
                                 snackbarHostState.showSnackbar("All fields must be filled")
                             } else {
                                 todoViewModel.addTodo()
@@ -106,10 +112,8 @@ fun AddTodoScreen(navController: NavController, todoViewModel: TodoViewModel = v
                 ),
             )
             DatePickerComponent(
-                initialDate = todoViewModel.selectedDate.value,
-                onDateSelected = { selectedDate ->
-                    todoViewModel.updateDate(selectedDate)
-                }
+                initialDate = state.selectedDate,
+                onDateSelected = { todoViewModel.updateDate(it) }
             )
         }
     }

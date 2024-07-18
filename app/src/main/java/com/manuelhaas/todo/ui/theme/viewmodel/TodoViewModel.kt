@@ -3,16 +3,19 @@ package com.manuelhaas.todo.ui.theme.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.manuelhaas.todo.ui.theme.components.formatDateWithYear
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.time.LocalDateTime
 
 
 data class Todo(
     val id: Int = 0,
     val todoName: String = "",
     val tag: String = "",
+    val selectedDate: String = LocalDateTime.now().formatDateWithYear(),
     val date: String = "",
     var isFavorite: Boolean = false,
     var isChecked: Boolean = false,
@@ -25,11 +28,9 @@ class TodoViewModel : ViewModel() {
     private val _todos = MutableStateFlow<MutableList<Todo>>(mutableListOf())
     val todos: StateFlow<List<Todo>> get() = _todos
 
-    private val _selectedDate = mutableStateOf<String?>(null)
-    val selectedDate: State<String?>
-        get() = _selectedDate
-
-
+//    private val _selectedDate = mutableStateOf<String?>(LocalDateTime.now().formatDateWithYear())
+//    val selectedDate: State<String?>
+//        get() = _selectedDate
 
     fun updateTodoName(newTodoName: String) {
         _state.update {
@@ -44,24 +45,27 @@ class TodoViewModel : ViewModel() {
     }
 
     fun updateDate(newDate: String) {
-        _state.value = _state.value.copy(date = newDate)
+        _state.update {
+            it.copy(  selectedDate = newDate, date = newDate )
+        }
     }
 
-    fun setSelectedDate(date: String) {
-        _selectedDate.value = date
-    }
-
-    fun getSelectedDate(): String? {
-        return _selectedDate.value
-    }
+//    fun setSelectedDate(date: String) {
+//        _selectedDate.value = date
+//    }
+//
+//    fun getSelectedDate(): String? {
+//        return _selectedDate.value
+//    }
 
     fun addTodo() {
-        if (_state.value.todoName.isNotEmpty() && _state.value.tag.isNotEmpty() && _state.value.date.isNotEmpty()) {
+        if (_state.value.todoName.isNotEmpty() && _state.value.tag.isNotEmpty() && _state.value.selectedDate.isNotEmpty()) {
             val newTodo = Todo(
                 id = _todos.value.size + 1,
                 todoName = _state.value.todoName,
                 tag = _state.value.tag,
-                date = _state.value.date
+                date = _state.value.date,
+                selectedDate =  _state.value.selectedDate,
             )
             _todos.update { todos ->
                 todos.toMutableList().apply {
@@ -70,6 +74,7 @@ class TodoViewModel : ViewModel() {
             }
             clearNewTodoFields()
         }
+
     }
 
 
@@ -86,7 +91,8 @@ class TodoViewModel : ViewModel() {
                     it.copy(
                         todoName = _state.value.todoName,
                         tag = _state.value.tag,
-                        date = _state.value.date
+                        date = _state.value.date,
+                        selectedDate = _state.value.selectedDate,
                     )
                 } else {
                     it
@@ -113,7 +119,8 @@ class TodoViewModel : ViewModel() {
                 it.copy(
                     todoName = todo.todoName,
                     tag = todo.tag,
-                    date = todo.date
+                    date = todo.date,
+                    selectedDate = todo.selectedDate
                 )
             }
         }
@@ -148,7 +155,7 @@ class TodoViewModel : ViewModel() {
             it.copy(
                 todoName = "",
                 tag = "",
-                date = ""
+                date = "",
             )
         }
     }
